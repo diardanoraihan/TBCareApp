@@ -1,3 +1,4 @@
+from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
 import plotly.express as px
@@ -43,10 +44,34 @@ df_base = pd.read_csv('dataset/dataset.csv')
 df_base['Provinsi'] = df_base['Provinsi'].apply(lambda x: x.upper())
 df_base['id'] = df_base['Provinsi'].apply(lambda x: province_id_map[x])
 
+# Select the relevant columns for clustering
+features = [
+    '% nakes/penduduk',
+    '% pulmonologist/kasus',
+    '% dr umum/kasus',
+    '% Tenaga Kesehatan - Perawat/kasus',
+    '% Tenaga Kesehatan Masyarakat/kasus',
+    '% Tenaga Kesehatan Lingkungan/kasus'
+]
+
+# Extract the data and standardize it
+X = df_base[features].fillna(0)  # Handle missing values by filling with 0
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# K-Means Clustering (with K=3)
+k = 3
+kmeans = KMeans(n_clusters=k, random_state=0)
+kmeans.fit(X_scaled)
+
+# Add cluster labels to the DataFrame
+df_base['Cluster'] = [str(cluster + 1) for cluster in kmeans.labels_]
+
 col1, col2 = st.columns(2)
 
 with col1:
   modes = [
+    'Cluster',
     'Jumlah Kasus TBC',
     'Jumlah Penduduk',
     '% Tenaga Kesehatan (Semua Kategori) per Penduduk',
@@ -60,14 +85,39 @@ with col1:
   if mode == 'Jumlah Penduduk':
     color_mode = 'Jumlah Penduduk'
     color_scale = "Greens"
-  elif mode == '% Tenaga Kesehatan per Penduduk':
+    color_box = "green"
+  elif mode == '% Tenaga Kesehatan (Semua Kategori) per Penduduk':
     color_mode = '% nakes/penduduk'
     color_scale = "Blues"
+    color_box = "blue"
   elif mode == 'Jumlah Kasus TBC':
     color_mode = 'Jumlah Kasus Penyakit - TB Paru'
     color_scale = "YlOrRd"
-  else:
-    color_mode = 'Jumlah Penduduk'
+    color_box = "red"
+  elif mode == '% Pulmonologist per Kasus':
+    color_mode = '% pulmonologist/kasus'
+    color_scale = "Blues"
+    color_box = "blue"
+  elif mode == '% Dokter Umum per Kasus':
+    color_mode = '% dr umum/kasus'
+    color_scale = "Blues"
+    color_box = "blue"
+  elif mode == '% Tenaga Kesehatan Perawat per Kasus':
+    color_mode = '% Tenaga Kesehatan - Perawat/kasus'
+    color_scale = "Blues"
+    color_box = "blue"
+  elif mode == '% Tenaga Kesehatan Masyarakat per Kasus':
+    color_mode = '% Tenaga Kesehatan Masyarakat/kasus'
+    color_scale = "Blues"
+    color_box = "blue"
+  elif mode == '% Tenaga Kesehatan Lingkungan per Kasus':
+    color_mode = '% Tenaga Kesehatan Lingkungan/kasus'
+    color_scale = "Blues"
+    color_box = "blue"
+  elif mode == 'Cluster':
+    color_mode = 'Cluster'
+    color_scale = {'1': 'green', '2': 'blue', '3': 'orange'}
+    
   
 with col2:
   provinces = list(df_base['Provinsi'].unique())
@@ -101,18 +151,79 @@ fig.update_layout(
   coloraxis_colorbar = dict(
     orientation="h",  # Horizontal legend
     y=-0.1,  # Posisi Vertikal (negatif: di bawah grafik)
+    thickness=15,
+    len = 0.8
   )
 )
 
 # fig.show()
 st.plotly_chart(fig, use_container_width=True)
 
+col1, col2 = st.columns(2)
+
+with col1:
+  bar_title = mode + " di Setiap Provinsi"
+  bar_chart = px.bar(
+    df_base.sort_values(color_mode, ascending=True),
+    x=color_mode,
+    y="Provinsi",
+    orientation="h",
+    title=bar_title,
+    # labels={"Jumlah Kasus TBC": "Jumlah Kasus Penyakit - TB Paru", "Provinsi": "Provinsi"}, 
+    color= color_mode,
+    color_continuous_scale = color_scale
+  )
+  
+  bar_chart.update_layout(
+    title={'text': bar_title, 'x': 0.5, 'xanchor': 'center'},  # Judul di tengah
+    xaxis_title='',  # Menghapus judul axis x
+    yaxis_title='',  # Menghapus judul axis y
+    showlegend=False,  # Menonaktifkan legend jika tidak diperlukan
+    coloraxis_showscale=False,
+    plot_bgcolor='rgba(255, 255, 255, 0.1)',  # Warna latar belakang plot lebih terang (putih dengan transparansi)
+    paper_bgcolor='rgba(255, 255, 255, 0.05)',  # Warna latar belakang keseluruhan area lebih transparan
+    xaxis=dict(
+        gridcolor='rgba(169, 169, 169, 0.5)'  # Warna abu-abu untuk garis grid pada sumbu x
+    )
+  )
+  bar_chart.update_xaxes(showline=True, linewidth=1, linecolor='black')
+  bar_chart.update_yaxes(showline=True, linewidth=1, linecolor='black')
+  st.plotly_chart(bar_chart)
+  
+with col2:
+  
+  box_title = "Distribusi " + mode + " di Setiap Provinsi"
+  
+  box_plot = px.box(
+      df_base,
+      y=color_mode,
+      title=box_title,
+      color_discrete_sequence = [color_box],
+      hover_name = "Provinsi",
+      hover_data={
+        color_mode: True
+      }
+  )
+  
+  box_plot.update_layout(
+    title={'text': box_title, 'x': 0.5, 'xanchor': 'center'},  # Judul di tengah
+    xaxis_title='',  # Menghapus judul axis x
+    yaxis_title='',  # Menghapus judul axis y
+    showlegend=False,  # Menonaktifkan legend jika tidak diperlukan
+    plot_bgcolor='rgba(255, 255, 255, 0.1)',  # Warna latar belakang plot lebih terang (putih dengan transparansi)
+    paper_bgcolor='rgba(255, 255, 255, 0.05)',  # Warna latar belakang keseluruhan area lebih transparan
+    xaxis=dict(
+        gridcolor='rgba(169, 169, 169, 0.5)'  # Warna abu-abu untuk garis grid pada sumbu x
+    )
+  )
+  box_plot.update_xaxes(showline=True, linewidth=1, linecolor='black')
+  box_plot.update_yaxes(showline=True, linewidth=1, linecolor='black')
+  st.plotly_chart(box_plot, use_container_width=True)
+
 columns = ['Provinsi']
 columns.append(color_mode)
 # st.write(columns)
 df_gen_ai = df_base[columns] # Untuk Bakti
-
-st.dataframe(df_gen_ai)
 
 # ---- HIDE STREAMLIT STYLE ----
 # hide_st_style = """

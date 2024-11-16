@@ -1,5 +1,5 @@
-# VulprioApp
-Risk Based Vulnerability Prioritization App using Machine Learning Model
+# TBCare 1.0
+An AI-Powered Web App to Track the Spread of TBC and Healthcare Resources in Indonesia
 
 ## Packages Installation on Mac/Windows
 - Create your python virtual environment

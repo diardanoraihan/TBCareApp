@@ -7,3 +7,4 @@ streamlit
 plotly
 openpyxl
 duckdb
+jinja2>=3.1.2

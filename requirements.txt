@@ -9,3 +9,4 @@ openpyxl
 duckdb
 jinja2>=3.1.2
 threadpoolctl>=3.1.0
+openai

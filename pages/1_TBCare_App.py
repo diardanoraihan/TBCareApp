@@ -7,7 +7,8 @@ import duckdb as db
 import pandas as pd
 import numpy as np
 import json
-import os
+from openai import OpenAI
+import time
 
 # ---- Set Page Configuration ----
 st.set_page_config(page_title="TBCare App",
@@ -60,7 +61,7 @@ scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
 # K-Means Clustering (with K=3)
-k = 3
+k = 5
 kmeans = KMeans(n_clusters=k, random_state=0)
 kmeans.fit(X_scaled)
 
@@ -117,13 +118,13 @@ with col1:
   elif mode == 'Cluster':
     color_mode = 'Cluster'
     color_scale = {'1': 'green', '2': 'blue', '3': 'orange'}
-    
-  
+
+
 with col2:
   provinces = list(df_base['Provinsi'].unique())
   provinces.sort()
   provinsi = st.multiselect(f'Pilih Provinsi: ', options = provinces)
-  
+
   if provinsi:
     df_base = df_base[df_base['Provinsi'].isin(provinsi)]
 
@@ -139,11 +140,8 @@ fig = px.choropleth_mapbox(data_frame = df_base,
                            center = {"lat": -2.548926, "lon": 118.0148634})
 
 fig.update_traces(
-    hovertemplate="<b>%{customdata[0]}</b><br>" +
-                  "Jumlah Penduduk = %{customdata[1]}<br>" +
-                  "Jumlah Tenaga Kesehatan / Jumlah Penduduk (%) = %{customdata[2]:.2f}%<br>" +
-                  "Jumlah Kasus Penyakit TBC = %{customdata[3]}",
-    customdata=df_base[["Provinsi", "Jumlah Penduduk", "% nakes/penduduk", "Jumlah Kasus Penyakit - TB Paru"]].to_numpy()
+    hovertemplate="<b>%{customdata[0]}</b><br>" + color_mode + " = %{customdata[1]}",
+    customdata=df_base[["Provinsi", color_mode]].to_numpy()
 )
 
 fig.update_layout(
@@ -159,71 +157,185 @@ fig.update_layout(
 # fig.show()
 st.plotly_chart(fig, use_container_width=True)
 
-col1, col2 = st.columns(2)
+if mode != 'Cluster':
+  col1, col2 = st.columns(2)
 
-with col1:
-  bar_title = mode + " di Setiap Provinsi"
-  bar_chart = px.bar(
-    df_base.sort_values(color_mode, ascending=True),
-    x=color_mode,
-    y="Provinsi",
-    orientation="h",
-    title=bar_title,
-    # labels={"Jumlah Kasus TBC": "Jumlah Kasus Penyakit - TB Paru", "Provinsi": "Provinsi"}, 
-    color= color_mode,
-    color_continuous_scale = color_scale
-  )
-  
-  bar_chart.update_layout(
-    title={'text': bar_title, 'x': 0.5, 'xanchor': 'center'},  # Judul di tengah
-    xaxis_title='',  # Menghapus judul axis x
-    yaxis_title='',  # Menghapus judul axis y
-    showlegend=False,  # Menonaktifkan legend jika tidak diperlukan
-    coloraxis_showscale=False,
-    plot_bgcolor='rgba(255, 255, 255, 0.1)',  # Warna latar belakang plot lebih terang (putih dengan transparansi)
-    paper_bgcolor='rgba(255, 255, 255, 0.05)',  # Warna latar belakang keseluruhan area lebih transparan
-    xaxis=dict(
-        gridcolor='rgba(169, 169, 169, 0.5)'  # Warna abu-abu untuk garis grid pada sumbu x
+  with col1:
+    bar_title = mode + " di Setiap Provinsi"
+    bar_chart = px.bar(
+      df_base.sort_values(color_mode, ascending=True),
+      x=color_mode,
+      y="Provinsi",
+      orientation="h",
+      title=bar_title,
+      # labels={"Jumlah Kasus TBC": "Jumlah Kasus Penyakit - TB Paru", "Provinsi": "Provinsi"},
+      color= color_mode,
+      color_continuous_scale = color_scale
     )
-  )
-  bar_chart.update_xaxes(showline=True, linewidth=1, linecolor='black')
-  bar_chart.update_yaxes(showline=True, linewidth=1, linecolor='black')
-  st.plotly_chart(bar_chart)
-  
-with col2:
-  
-  box_title = "Distribusi " + mode + " di Setiap Provinsi"
-  
-  box_plot = px.box(
-      df_base,
-      y=color_mode,
-      title=box_title,
-      color_discrete_sequence = [color_box],
-      hover_name = "Provinsi",
-      hover_data={
-        color_mode: True
-      }
-  )
-  
-  box_plot.update_layout(
-    title={'text': box_title, 'x': 0.5, 'xanchor': 'center'},  # Judul di tengah
-    xaxis_title='',  # Menghapus judul axis x
-    yaxis_title='',  # Menghapus judul axis y
-    showlegend=False,  # Menonaktifkan legend jika tidak diperlukan
-    plot_bgcolor='rgba(255, 255, 255, 0.1)',  # Warna latar belakang plot lebih terang (putih dengan transparansi)
-    paper_bgcolor='rgba(255, 255, 255, 0.05)',  # Warna latar belakang keseluruhan area lebih transparan
-    xaxis=dict(
-        gridcolor='rgba(169, 169, 169, 0.5)'  # Warna abu-abu untuk garis grid pada sumbu x
+
+    bar_chart.update_layout(
+      title={'text': bar_title, 'x': 0.5, 'xanchor': 'center'},  # Judul di tengah
+      xaxis_title='',  # Menghapus judul axis x
+      yaxis_title='',  # Menghapus judul axis y
+      showlegend=False,  # Menonaktifkan legend jika tidak diperlukan
+      coloraxis_showscale=False,
+      plot_bgcolor='rgba(255, 255, 255, 0.1)',  # Warna latar belakang plot lebih terang (putih dengan transparansi)
+      paper_bgcolor='rgba(255, 255, 255, 0.05)',  # Warna latar belakang keseluruhan area lebih transparan
+      xaxis=dict(
+          gridcolor='rgba(169, 169, 169, 0.5)'  # Warna abu-abu untuk garis grid pada sumbu x
+      )
     )
-  )
-  box_plot.update_xaxes(showline=True, linewidth=1, linecolor='black')
-  box_plot.update_yaxes(showline=True, linewidth=1, linecolor='black')
-  st.plotly_chart(box_plot, use_container_width=True)
+    bar_chart.update_xaxes(showline=True, linewidth=1, linecolor='black')
+    bar_chart.update_yaxes(showline=True, linewidth=1, linecolor='black')
+    st.plotly_chart(bar_chart)
+
+  with col2:
+
+    box_title = "Distribusi " + mode + " di Setiap Provinsi"
+
+    box_plot = px.box(
+        df_base,
+        y=color_mode,
+        title=box_title,
+        color_discrete_sequence = [color_box],
+        hover_name = "Provinsi",
+        hover_data={
+          color_mode: True
+        }
+    )
+
+    box_plot.update_layout(
+      title={'text': box_title, 'x': 0.5, 'xanchor': 'center'},  # Judul di tengah
+      xaxis_title='',  # Menghapus judul axis x
+      yaxis_title='',  # Menghapus judul axis y
+      showlegend=False,  # Menonaktifkan legend jika tidak diperlukan
+      plot_bgcolor='rgba(255, 255, 255, 0.1)',  # Warna latar belakang plot lebih terang (putih dengan transparansi)
+      paper_bgcolor='rgba(255, 255, 255, 0.05)',  # Warna latar belakang keseluruhan area lebih transparan
+      xaxis=dict(
+          gridcolor='rgba(169, 169, 169, 0.5)'  # Warna abu-abu untuk garis grid pada sumbu x
+      )
+    )
+    box_plot.update_xaxes(showline=True, linewidth=1, linecolor='black')
+    box_plot.update_yaxes(showline=True, linewidth=1, linecolor='black')
+    st.plotly_chart(box_plot, use_container_width=True)
+else:
+  df_cluster_means = df_base.groupby('Cluster')[features].mean()
+  df_cluster_means.reset_index(inplace = True)
+  
+  col1, col2, col3, col4, col5 = st.columns(5)
+  
+  columns = ["Provinsi"] + features
+  with col1:
+    st.write('### Cluster 1')
+    col1.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% nakes/penduduk'], 2))
+    col1.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% pulmonologist/kasus'], 2))
+    col1.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% dr umum/kasus'], 2))
+    col1.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% Tenaga Kesehatan - Perawat/kasus'], 2))
+    col1.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% Tenaga Kesehatan Masyarakat/kasus'], 2))
+    col1.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% Tenaga Kesehatan Lingkungan/kasus'], 2))
+    col1_provinces = ', '.join(list(df_base[df_base['Cluster'] == '1']['Provinsi']))
+    st.write(col1_provinces)
+  with col2:
+    st.write('### Cluster 2')
+    col2.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% nakes/penduduk'], 2))
+    col2.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% pulmonologist/kasus'], 2))
+    col2.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% dr umum/kasus'], 2))
+    col2.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% Tenaga Kesehatan - Perawat/kasus'], 2))
+    col2.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% Tenaga Kesehatan Masyarakat/kasus'], 2))
+    col2.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% Tenaga Kesehatan Lingkungan/kasus'], 2))
+    col2_provinces = ', '.join(list(df_base[df_base['Cluster'] == '2']['Provinsi']))
+    st.write(col2_provinces)
+  with col3:
+    st.write('### Cluster 3')
+    col3.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% nakes/penduduk'], 2))
+    col3.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% pulmonologist/kasus'], 2))
+    col3.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% dr umum/kasus'], 2))
+    col3.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% Tenaga Kesehatan - Perawat/kasus'], 2))
+    col3.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% Tenaga Kesehatan Masyarakat/kasus'], 2))
+    col3.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% Tenaga Kesehatan Lingkungan/kasus'], 2))
+    col3_provinces = ', '.join(list(df_base[df_base['Cluster'] == '3']['Provinsi']))
+    st.write(col3_provinces)
+  with col4:
+    st.write('### Cluster 4')
+    col4.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% nakes/penduduk'], 2))
+    col4.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% pulmonologist/kasus'], 2))
+    col4.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% dr umum/kasus'], 2))
+    col4.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% Tenaga Kesehatan - Perawat/kasus'], 2))
+    col4.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% Tenaga Kesehatan Masyarakat/kasus'], 2))
+    col4.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% Tenaga Kesehatan Lingkungan/kasus'], 2))
+    col4_provinces = ', '.join(list(df_base[df_base['Cluster'] == '4']['Provinsi']))
+    st.write(col4_provinces)
+  with col5:
+    st.write('### Cluster 5')
+    col5.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% nakes/penduduk'], 2))
+    col5.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% pulmonologist/kasus'], 2))
+    col5.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% dr umum/kasus'], 2))
+    col5.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% Tenaga Kesehatan - Perawat/kasus'], 2))
+    col5.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% Tenaga Kesehatan Masyarakat/kasus'], 2))
+    col5.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% Tenaga Kesehatan Lingkungan/kasus'], 2))
+    col5_provinces = ', '.join(list(df_base[df_base['Cluster'] == '5']['Provinsi']))
+    st.write(col5_provinces)
 
 columns = ['Provinsi']
-columns.append(color_mode)
+if mode != "Cluster":
+  columns.append(color_mode)
+else:
+  columns = columns + features
 # st.write(columns)
 df_gen_ai = df_base[columns] # Untuk Bakti
+
+# ---- AI-Powered Insights ----
+st.markdown("---")
+st.header("AI-Powered Insights")
+
+
+client = OpenAI(
+    api_key = st.secrets("OPENAI_API_KEY"),
+)
+# Prepare the data for the AI prompt
+data_string = df_gen_ai.to_csv(index=False)
+# data_string = df_gen_ai.head(10).to_csv(index=False)
+
+
+# Construct the prompt
+prompt = (
+    "Sebagai Asisten AI, analisa data berikut dan berikan insight yang baik.\n\n"
+    f"Data:\n{data_string}\n\n"
+    f"Berikan Insight dengan mempertimbangkan rekomendasi WHO berikut : rasio nakes / jumlah penduduk = 0.445%, rasio dokter paru & dokter umum / pasien = 0.4%, rasio perawat / pasien =2%"
+)
+
+# Call the OpenAI GPT-4 model
+with st.spinner("Generating insights..."):
+    try:
+        # Create a placeholder for the AI response
+        # st.write("### AI Response:")
+        response_placeholder = st.empty()
+
+        # Initialize an empty string to hold the AI's response
+        ai_response = ""
+
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Kamu adalah Asisten AI yang mampu menganalisa data dan memberikan insight yang baik",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.7,
+            stream=True,  # Enable streaming
+        )
+
+        # Iterate over the streamed response
+        for chunk in response:
+            chunk_message = chunk.choices[0].delta.content or ""
+            ai_response += chunk_message
+            # Update the placeholder with the latest AI response
+            response_placeholder.markdown(ai_response)
+            time.sleep(0.01)  # Optional: control typing speed
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
 
 # ---- HIDE STREAMLIT STYLE ----
 # hide_st_style = """

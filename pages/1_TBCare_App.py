@@ -218,7 +218,9 @@ if mode != 'Cluster':
     box_plot.update_xaxes(showline=True, linewidth=1, linecolor='black')
     box_plot.update_yaxes(showline=True, linewidth=1, linecolor='black')
     st.plotly_chart(box_plot, use_container_width=True)
+    
 else:
+  
   df_cluster_means = df_base.groupby('Cluster')[features].mean()
   df_cluster_means.reset_index(inplace = True)
   
@@ -227,56 +229,61 @@ else:
   columns = ["Provinsi"] + features
   with col1:
     st.write('### Cluster 1')
-    col1.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% nakes/penduduk'], 3))
-    col1.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% pulmonologist/kasus'], 3))
-    col1.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% dr umum/kasus'], 3))
-    col1.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% Tenaga Kesehatan - Perawat/kasus'], 3))
-    col1.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
-    col1.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    col1.metric(label='Avg. % Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% nakes/penduduk'], 3))
+    col1.metric(label='Avg. % Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% pulmonologist/kasus'], 3))
+    col1.metric(label='Avg. % Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% dr umum/kasus'], 3))
+    col1.metric(label='Avg. % Nakes Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% Tenaga Kesehatan - Perawat/kasus'], 3))
+    col1.metric(label='Avg. % Nakes Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
+    col1.metric(label='Avg. % Nakes Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '1']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    st.write('Daftar Provinsi: ')
     col1_provinces = ', '.join(list(df_base[df_base['Cluster'] == '1']['Provinsi']))
     st.write(col1_provinces)
   with col2:
     st.write('### Cluster 2')
-    col2.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% nakes/penduduk'], 3))
-    col2.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% pulmonologist/kasus'], 3))
-    col2.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% dr umum/kasus'], 3))
-    col2.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% Tenaga Kesehatan - Perawat/kasus'], 3))
-    col2.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
-    col2.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    col2.metric(label='Avg. % Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% nakes/penduduk'], 3))
+    col2.metric(label='Avg. % Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% pulmonologist/kasus'], 3))
+    col2.metric(label='Avg. % Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% dr umum/kasus'], 3))
+    col2.metric(label='Avg. % Nakes Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% Tenaga Kesehatan - Perawat/kasus'], 3))
+    col2.metric(label='Avg. % Nakes Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
+    col2.metric(label='Avg. % Nakes Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '2']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    st.write('Daftar Provinsi: ')
     col2_provinces = ', '.join(list(df_base[df_base['Cluster'] == '2']['Provinsi']))
     st.write(col2_provinces)
   with col3:
     st.write('### Cluster 3')
-    col3.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% nakes/penduduk'], 3))
-    col3.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% pulmonologist/kasus'], 3))
-    col3.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% dr umum/kasus'], 3))
-    col3.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% Tenaga Kesehatan - Perawat/kasus'], 3))
-    col3.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
-    col3.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    col3.metric(label='Avg. % Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% nakes/penduduk'], 3))
+    col3.metric(label='Avg. % Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% pulmonologist/kasus'], 3))
+    col3.metric(label='Avg. % Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% dr umum/kasus'], 3))
+    col3.metric(label='Avg. % Nakes Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% Tenaga Kesehatan - Perawat/kasus'], 3))
+    col3.metric(label='Avg. % Nakes Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
+    col3.metric(label='Avg. % Nakes Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '3']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    st.write('Daftar Provinsi: ')
     col3_provinces = ', '.join(list(df_base[df_base['Cluster'] == '3']['Provinsi']))
     st.write(col3_provinces)
   with col4:
     st.write('### Cluster 4')
-    col4.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% nakes/penduduk'], 3))
-    col4.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% pulmonologist/kasus'], 3))
-    col4.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% dr umum/kasus'], 3))
-    col4.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% Tenaga Kesehatan - Perawat/kasus'], 3))
-    col4.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
-    col4.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    col4.metric(label='Avg. % Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% nakes/penduduk'], 3))
+    col4.metric(label='Avg. % Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% pulmonologist/kasus'], 3))
+    col4.metric(label='Avg. % Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% dr umum/kasus'], 3))
+    col4.metric(label='Avg. % Nakes Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% Tenaga Kesehatan - Perawat/kasus'], 3))
+    col4.metric(label='Avg. % Nakes Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
+    col4.metric(label='Avg. % Nakes Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '4']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    st.write('Daftar Provinsi: ')
     col4_provinces = ', '.join(list(df_base[df_base['Cluster'] == '4']['Provinsi']))
     st.write(col4_provinces)
   with col5:
     st.write('### Cluster 5')
-    col5.metric(label='% Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% nakes/penduduk'], 3))
-    col5.metric(label='% Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% pulmonologist/kasus'], 3))
-    col5.metric(label='% Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% dr umum/kasus'], 3))
-    col5.metric(label='% Tenaga Kesehatan - Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% Tenaga Kesehatan - Perawat/kasus'], 3))
-    col5.metric(label='% Tenaga Kesehatan Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
-    col5.metric(label='% Tenaga Kesehatan Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    col5.metric(label='Avg. % Nakes per Penduduk', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% nakes/penduduk'], 3))
+    col5.metric(label='Avg. % Pulmonologist per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% pulmonologist/kasus'], 3))
+    col5.metric(label='Avg. % Dokter umum per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% dr umum/kasus'], 3))
+    col5.metric(label='Avg. % Nakes Perawat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% Tenaga Kesehatan - Perawat/kasus'], 3))
+    col5.metric(label='Avg. % Nakes Masyarakat per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% Tenaga Kesehatan Masyarakat/kasus'], 3))
+    col5.metric(label='Avg. % Nakes Lingkungan per Kasus', value=np.round(df_cluster_means[df_cluster_means['Cluster'] == '5']['% Tenaga Kesehatan Lingkungan/kasus'], 3))
+    st.write('Daftar Provinsi: ')
     col5_provinces = ', '.join(list(df_base[df_base['Cluster'] == '5']['Provinsi']))
     st.write(col5_provinces)
 
-columns = ['Provinsi']
+columns = ['Provinsi', 'Cluster']
 if mode != "Cluster":
   columns.append(color_mode)
 else:
@@ -298,11 +305,19 @@ data_string = df_gen_ai.to_csv(index=False)
 
 
 # Construct the prompt
-prompt = (
-    "Sebagai Asisten AI, analisa data berikut dan berikan insight yang baik.\n\n"
-    f"Data:\n{data_string}\n\n"
-    f"Berikan Insight dengan mempertimbangkan rekomendasi WHO berikut : rasio nakes / jumlah penduduk = 0.445%, rasio dokter paru & dokter umum / pasien = 0.4%, rasio perawat / pasien =2%"
-)
+if mode != 'Cluster':
+  prompt = (
+      "Sebagai Asisten AI, analisis data berikut dan berikan insight yang baik.\n\n"
+      f"Data:\n{data_string}\n\n"
+      f"Berikan Insight dengan mempertimbangkan rekomendasi WHO berikut : rasio nakes / jumlah penduduk = 0.445%, rasio dokter paru & dokter umum / pasien = 0.4%, rasio perawat / pasien =2%"
+  )
+else:
+  prompt = (
+      "Sebagai Asisten AI, analisis karakteristik setiap cluster  beserta daftar provinsinya pada data berikut dengan mempertimbangkan 6 parameter diantaranya: \n"
+      f"{features}\n"
+      f"Data:\n{data_string}\n\n"
+      f"Berikan Insight rekomendasi cluster mana yang perlu diprioritaskan dari prioritas tinggi, menengah, dan rendah, beserta daftar provinsinya untuk penanganan segera dengan mempertimbangkan rekomendasi WHO berikut : rasio nakes / jumlah penduduk = 0.445%, rasio dokter paru & dokter umum / pasien = 0.4%, rasio perawat / pasien =2%"
+  )
 
 # Call the OpenAI GPT-4 model
 with st.spinner("Generating insights..."):

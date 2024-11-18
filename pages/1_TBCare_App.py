@@ -297,7 +297,7 @@ st.header("AI-Powered Insights")
 
 
 client = OpenAI(
-    api_key = st.secrets["OPENAI_API_KEY"],
+    # api_key = st.secrets["OPENAI_API_KEY"],
 )
 # Prepare the data for the AI prompt
 data_string = df_gen_ai.to_csv(index=False)

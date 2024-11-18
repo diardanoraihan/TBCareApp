@@ -117,7 +117,7 @@ with col1:
     color_box = "blue"
   elif mode == 'Cluster':
     color_mode = 'Cluster'
-    color_scale = {'1': 'green', '2': 'blue', '3': 'orange'}
+    color_scale = {'1': 'red', '2': 'green', '3': 'blue', '4': 'orange', '5': 'brown'}
 
 
 with col2:

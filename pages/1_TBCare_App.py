@@ -295,62 +295,62 @@ df_gen_ai = df_base[columns] # Untuk Bakti
 st.markdown("---")
 st.header("AI-Powered Insights")
 
-
-client = OpenAI(
-    # api_key = st.secrets["OPENAI_API_KEY"],
-)
-# Prepare the data for the AI prompt
-data_string = df_gen_ai.to_csv(index=False)
-# data_string = df_gen_ai.head(10).to_csv(index=False)
-
-
-# Construct the prompt
-if mode != 'Cluster':
-  prompt = (
-      "Sebagai Asisten AI, analisis data berikut dan berikan insight yang baik.\n\n"
-      f"Data:\n{data_string}\n\n"
-      f"Berikan Insight dengan mempertimbangkan rekomendasi WHO berikut : rasio nakes / jumlah penduduk = 0.445%, rasio dokter paru & dokter umum / pasien = 0.4%, rasio perawat / pasien =2%"
+if st.button('Hasilkan Insights'):
+  client = OpenAI(
+      # api_key = st.secrets["OPENAI_API_KEY"],
   )
-else:
-  prompt = (
-      "Sebagai Asisten AI, analisis karakteristik setiap cluster  beserta daftar provinsinya pada data berikut dengan mempertimbangkan 6 parameter diantaranya: \n"
-      f"{features}\n"
-      f"Data:\n{data_string}\n\n"
-      f"Berikan Insight rekomendasi cluster mana yang perlu diprioritaskan dari prioritas tinggi, menengah, dan rendah, beserta daftar provinsinya untuk penanganan segera dengan mempertimbangkan rekomendasi WHO berikut : rasio nakes / jumlah penduduk = 0.445%, rasio dokter paru & dokter umum / pasien = 0.4%, rasio perawat / pasien =2%"
-  )
+  # Prepare the data for the AI prompt
+  data_string = df_gen_ai.to_csv(index=False)
+  # data_string = df_gen_ai.head(10).to_csv(index=False)
 
-# Call the OpenAI GPT-4 model
-with st.spinner("Generating insights..."):
-    try:
-        # Create a placeholder for the AI response
-        # st.write("### AI Response:")
-        response_placeholder = st.empty()
 
-        # Initialize an empty string to hold the AI's response
-        ai_response = ""
+  # Construct the prompt
+  if mode != 'Cluster':
+    prompt = (
+        "Sebagai Asisten AI, analisis data berikut dan berikan insight yang baik.\n\n"
+        f"Data:\n{data_string}\n\n"
+        f"Berikan Insight dengan mempertimbangkan rekomendasi WHO berikut : rasio nakes / jumlah penduduk = 0.445%, rasio dokter paru & dokter umum / pasien = 0.4%, rasio perawat / pasien =2%"
+    )
+  else:
+    prompt = (
+        "Sebagai Asisten AI, analisis karakteristik setiap cluster  beserta daftar provinsinya pada data berikut dengan mempertimbangkan 6 parameter diantaranya: \n"
+        f"{features}\n"
+        f"Data:\n{data_string}\n\n"
+        f"Berikan Insight rekomendasi cluster mana yang perlu diprioritaskan dari prioritas tinggi, menengah, dan rendah, beserta daftar provinsinya untuk penanganan segera dengan mempertimbangkan rekomendasi WHO berikut : rasio nakes / jumlah penduduk = 0.445%, rasio dokter paru & dokter umum / pasien = 0.4%, rasio perawat / pasien =2%"
+    )
 
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Kamu adalah Asisten AI yang mampu menganalisa data dan memberikan insight yang baik",
-                },
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.7,
-            stream=True,  # Enable streaming
-        )
+  # Call the OpenAI GPT-4 model
+  with st.spinner("Generating insights..."):
+      try:
+          # Create a placeholder for the AI response
+          # st.write("### AI Response:")
+          response_placeholder = st.empty()
 
-        # Iterate over the streamed response
-        for chunk in response:
-            chunk_message = chunk.choices[0].delta.content or ""
-            ai_response += chunk_message
-            # Update the placeholder with the latest AI response
-            response_placeholder.markdown(ai_response)
-            time.sleep(0.01)  # Optional: control typing speed
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
+          # Initialize an empty string to hold the AI's response
+          ai_response = ""
+
+          response = client.chat.completions.create(
+              model="gpt-4o",
+              messages=[
+                  {
+                      "role": "system",
+                      "content": "Kamu adalah Asisten AI yang mampu menganalisa data dan memberikan insight yang baik",
+                  },
+                  {"role": "user", "content": prompt},
+              ],
+              temperature=0.7,
+              stream=True,  # Enable streaming
+          )
+
+          # Iterate over the streamed response
+          for chunk in response:
+              chunk_message = chunk.choices[0].delta.content or ""
+              ai_response += chunk_message
+              # Update the placeholder with the latest AI response
+              response_placeholder.markdown(ai_response)
+              time.sleep(0.01)  # Optional: control typing speed
+      except Exception as e:
+          st.error(f"An error occurred: {e}")
 
 # ---- HIDE STREAMLIT STYLE ----
 hide_st_style = """
